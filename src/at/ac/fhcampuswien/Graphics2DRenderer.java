@@ -5,7 +5,7 @@ import java.awt.Graphics2D;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Path2D;
 import org.dyn4j.geometry.Circle;
-import org.dyn4j.geometry.Polygon;;
+import org.dyn4j.geometry.Polygon;
 import org.dyn4j.geometry.Shape;
 import org.dyn4j.geometry.Vector2;
 

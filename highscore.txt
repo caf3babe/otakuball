@@ -1,1 +1,1 @@
-Onur:100;
+onur:100;nichil:10;
