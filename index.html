@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Otakuball</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #000; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden; font-family: sans-serif; }
+    #gameCanvas { display: block; cursor: crosshair; }
+    #ui {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      display: flex; justify-content: center; align-items: center;
+      pointer-events: none; z-index: 10;
+    }
+    #menuOverlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      display: flex; justify-content: center; align-items: center;
+      z-index: 20; pointer-events: all;
+    }
+    #menuOverlay.hidden { display: none; }
+    #menuBox {
+      background: rgba(0,0,0,0.7); border: 2px solid #fff;
+      border-radius: 12px; padding: 40px 60px; text-align: center;
+      color: #fff; max-width: 500px; width: 90%;
+    }
+    #menuBox h1 { font-size: 2.5em; margin-bottom: 10px; color: #f0a000; }
+    #menuBox input {
+      width: 100%; padding: 10px; margin: 15px 0 5px;
+      font-size: 1.1em; border-radius: 6px; border: 2px solid #f0a000;
+      background: rgba(255,255,255,0.1); color: #fff; text-align: center;
+    }
+    #menuBox input::placeholder { color: #aaa; }
+    .menu-btn {
+      display: block; width: 100%; padding: 12px; margin: 10px 0;
+      font-size: 1.1em; cursor: pointer; border: none; border-radius: 8px;
+      font-weight: bold; transition: opacity 0.2s;
+    }
+    .menu-btn:hover { opacity: 0.85; }
+    #btnPlay { background: #f0a000; color: #000; }
+    #btnHighscore { background: #2080c0; color: #fff; }
+    #btnResume { background: #20a040; color: #fff; display: none; }
+    #hsTable { margin-top: 10px; display: none; text-align: left; }
+    #hsTable table { width: 100%; border-collapse: collapse; }
+    #hsTable td { padding: 4px 10px; border-bottom: 1px solid rgba(255,255,255,0.2); }
+    #hsTable td:last-child { text-align: right; color: #f0a000; }
+    #completeOverlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.85); display: none; justify-content: center;
+      align-items: center; z-index: 30; color: #fff; text-align: center;
+    }
+    #completeOverlay.show { display: flex; }
+    #completeBox { padding: 50px; }
+    #completeBox h1 { font-size: 3em; color: #f0a000; margin-bottom: 20px; }
+    #completeBox p { font-size: 1.5em; margin-bottom: 30px; }
+    #btnPlayAgain { background: #f0a000; color: #000; padding: 15px 40px; font-size: 1.2em; cursor: pointer; border: none; border-radius: 8px; font-weight: bold; }
+  </style>
+</head>
+<body>
+<canvas id="gameCanvas"></canvas>
+
+<div id="menuOverlay">
+  <div id="menuBox">
+    <h1>⚽ Otakuball</h1>
+    <p style="color:#ccc; font-size:0.9em;">Drag &amp; release to shoot the ball into the goal!</p>
+    <input id="nameInput" type="text" placeholder="Enter your name" maxlength="20">
+    <button class="menu-btn" id="btnResume">▶ Resume Game</button>
+    <button class="menu-btn" id="btnPlay">▶ Play Game</button>
+    <button class="menu-btn" id="btnHighscore">🏆 Highscores</button>
+    <div id="hsTable">
+      <table id="hsTableBody"></table>
+    </div>
+  </div>
+</div>
+
+<div id="completeOverlay">
+  <div id="completeBox">
+    <h1>🎉 Game Complete!</h1>
+    <p id="completeScore"></p>
+    <button id="btnPlayAgain" onclick="location.reload()">Play Again</button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
