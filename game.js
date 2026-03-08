@@ -385,11 +385,9 @@ function initL2() {
   // Breakable bricks
   const brickDefs = [
     { x: fx,          y: -1.5 }, { x: fx+bW,     y: -1.5 },
-    { x: fx+bW*2,     y: -1.5 }, { x: fx+bW*3,   y: -1.5 },
     { x: fx+bW*6,     y: bH-1.5 }, { x: fx+bW*7, y: bH-1.5 },
     { x: fx+bW*8,     y: bH-1.5 }, { x: fx+bW*9, y: bH-1.5 },
-    { x: fx+bW*10,    y: bH-1.5 }, { x: fx+bW*12, y: bH-1.5 },
-    { x: fx+bW*21,    y: -2 },   { x: fx+bW*23,   y: -2 },
+    { x: fx+bW*23,    y: -2 },
   ];
   brickDefs.forEach(p => {
     const b = mkStatic(p.x, p.y, bW, bH, { label:LABELS.BRICK });
@@ -401,10 +399,10 @@ function initL2() {
   // Saw blades (pendulums)
   const anchorL = d2c(fx + bW*11, bH - 1.5);
   const anchorR = d2c(fx + bW*22, -2);
-  const bladeL  = mkCircle(fx + bW*11, bH - 1.5 - 1.7, 0.40, { label:LABELS.BLADE, density:0.5, frictionAir:0 });
-  const bladeR  = mkCircle(fx + bW*22, -2 - 1.2,       0.40, { label:LABELS.BLADE, density:0.5, frictionAir:0 });
-  Body.setVelocity(bladeL, { x:-4, y:0 });
-  Body.setVelocity(bladeR, { x: 4, y:0 });
+  const bladeL  = mkCircle(fx + bW*11, bH - 1.5 - 1.7, 0.40, { label:LABELS.BLADE, density:0.2, frictionAir:0.02 });
+  const bladeR  = mkCircle(fx + bW*22, -2 - 1.2,       0.40, { label:LABELS.BLADE, density:0.2, frictionAir:0.02 });
+  Body.setVelocity(bladeL, { x:-2, y:0 });
+  Body.setVelocity(bladeR, { x: 2, y:0 });
   World.add(world, [bladeL, bladeR]);
   blades = [bladeL, bladeR];
   levelBodies.push({ body:bladeL, imageKey:'blade', type:'blade' });
