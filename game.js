@@ -589,8 +589,9 @@ let pressPoint = null, dragPoint = null;
 
 function canvasToGame(e) {
   const rect = canvas.getBoundingClientRect();
-  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+  const touch = (e.touches && e.touches[0]) || (e.changedTouches && e.changedTouches[0]);
+  const clientX = touch ? touch.clientX : e.clientX;
+  const clientY = touch ? touch.clientY : e.clientY;
   return {
     x: (clientX - rect.left) / displayScale,
     y: (clientY - rect.top)  / displayScale,
@@ -681,6 +682,26 @@ function update(ts) {
 
   if (gameState === S.PLAYING) {
     Engine.update(engine, dt * 1000);
+
+    // Position-based goal detection (handles ball tunneling through thin sensors)
+    if (goalSensor && ball && !goalScored && !levelFailed) {
+      const bx = ball.position.x;
+      const by = ball.position.y;
+      const br = ball.circleRadius;
+      if (goalSensor.circleRadius) {
+        // Circle sensor (Level 5 wormhole)
+        const dx = bx - goalSensor.position.x;
+        const dy = by - goalSensor.position.y;
+        if (Math.sqrt(dx*dx + dy*dy) < goalSensor.circleRadius + br) onGoalScored();
+      } else {
+        // Rectangle sensor
+        const gs = goalSensor.bounds;
+        if (bx + br > gs.min.x && bx - br < gs.max.x &&
+            by + br > gs.min.y && by - br < gs.max.y) onGoalScored();
+      }
+    }
+    // Level 6: hitting Goku scores goal
+    if (curLevel === 5 && gokuHits >= 1 && !goalScored && !levelFailed) onGoalScored();
 
     // Level 6: Goku tracks ball Y
     if (curLevel === 5 && gokuBody && ball) {
