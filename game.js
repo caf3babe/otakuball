@@ -4,6 +4,8 @@
 (function () {
 'use strict';
 
+const GIT_HASH = '__GIT_HASH__';
+
 const { Engine, Bodies, Body, World, Events, Constraint, Vector, Composite, Runner } = Matter;
 
 // ── Canvas / display ─────────────────────────────────────────
@@ -237,32 +239,43 @@ function restartLevel() { clearLevel(); initLevel(curLevel); }
 function nextLevel()    { curLevel++; clearLevel(); initLevel(curLevel); }
 
 // ── Collision handling ────────────────────────────────────────
+function handlePair(A, B) {
+  const labels = [A.label, B.label];
+
+  // Goal scored
+  if (labels.includes(LABELS.BALL) && labels.includes(LABELS.GOAL)) {
+    onGoalScored();
+  }
+  // Blade kills (level 2)
+  if (curLevel === 1 && labels.includes(LABELS.BALL) && labels.includes(LABELS.BLADE)) {
+    onLevelFailed();
+  }
+  // Brick destroyed
+  if (labels.includes(LABELS.BALL) && labels.includes(LABELS.BRICK)) {
+    const brick = A.label === LABELS.BRICK ? A : B;
+    World.remove(world, brick);
+    brickBodies = brickBodies.filter(b => b !== brick);
+    levelBodies = levelBodies.filter(o => o.body !== brick);
+    playSfx('breakbrick');
+  }
+  // Goku hit counter (level 6)
+  if (curLevel === 5 && labels.includes(LABELS.BALL) && labels.includes(LABELS.GOKU)) {
+    gokuHits++;
+  }
+}
+
 function setupCollisions() {
   Events.on(engine, 'collisionStart', (ev) => {
     if (goalScored || levelFailed) return;
+    ev.pairs.forEach(pair => handlePair(pair.bodyA, pair.bodyB));
+  });
+  // collisionActive catches any frame the ball overlaps the goal sensor (belt-and-suspenders)
+  Events.on(engine, 'collisionActive', (ev) => {
+    if (goalScored || levelFailed) return;
     ev.pairs.forEach(pair => {
-      const { bodyA: A, bodyB: B } = pair;
-      const labels = [A.label, B.label];
-
-      // Goal scored
+      const labels = [pair.bodyA.label, pair.bodyB.label];
       if (labels.includes(LABELS.BALL) && labels.includes(LABELS.GOAL)) {
         onGoalScored();
-      }
-      // Blade kills (level 2)
-      if (curLevel === 1 && labels.includes(LABELS.BALL) && labels.includes(LABELS.BLADE)) {
-        onLevelFailed();
-      }
-      // Brick destroyed
-      if (labels.includes(LABELS.BALL) && labels.includes(LABELS.BRICK)) {
-        const brick = A.label === LABELS.BRICK ? A : B;
-        World.remove(world, brick);
-        brickBodies   = brickBodies.filter(b => b !== brick);
-        levelBodies   = levelBodies.filter(o => o.body !== brick);
-        playSfx('breakbrick');
-      }
-      // Goku hit counter (level 6)
-      if (curLevel === 5 && labels.includes(LABELS.BALL) && labels.includes(LABELS.GOKU)) {
-        gokuHits++;
       }
     });
   });
@@ -321,7 +334,7 @@ function initL1() {
   World.add(world, [crossbar, goalPost]);
 
   // Goal sensor
-  goalSensor = mkStatic(7.3, gy + 0.75 + 0.08/2, 0.06, 1.5,
+  goalSensor = mkStatic(7.0, gy + 0.75 + 0.08/2, 1.0, 1.5,
     { label:LABELS.GOAL, isSensor:true, collisionFilter:{ category:0x0002, mask:0x0001 } });
   World.add(world, goalSensor);
 
@@ -410,7 +423,7 @@ function initL2() {
   World.add(world, goalApp);
   levelBodies.push({ body:goalApp, imageKey:'lvl2Goal' });
 
-  goalSensor = mkStatic(7.5-0.70, gy + 0.60 + 0.08/2, 0.1, 1.2, { label:LABELS.GOAL, isSensor:true });
+  goalSensor = mkStatic(7.5-0.70, gy + 0.60 + 0.08/2, 1.0, 1.2, { label:LABELS.GOAL, isSensor:true });
   World.add(world, goalSensor);
 
   // Tunnel decoration
@@ -469,7 +482,7 @@ function initL3() {
   });
 
   // Goal sensor (thin vertical strip far right)
-  goalSensor = mkStatic(7.5-0.65, gy + 1 + 0.05, 0.05, 1.3, { label:LABELS.GOAL, isSensor:true });
+  goalSensor = mkStatic(7.5-0.65, gy + 1 + 0.05, 1.0, 1.3, { label:LABELS.GOAL, isSensor:true });
   World.add(world, goalSensor);
 
   makeBall(-6.5, 0, 'ball');
@@ -895,6 +908,13 @@ function drawHUD() {
   ctx.font = 'bold 28px sans-serif';
   ctx.fillText(`Score: ${totalScore}`, 22, 85);
   ctx.fillText(`Level ${curLevel + 1} / 6`, 22, 118);
+
+  // Git hash (version indicator)
+  ctx.fillStyle = 'rgba(255,255,255,0.35)';
+  ctx.font = '18px monospace';
+  ctx.textAlign = 'right';
+  ctx.fillText(GIT_HASH.slice(0, 7), GW - 10, GH - 10);
+  ctx.textAlign = 'left';
 
   // Back button
   if (images.backBtn) {
